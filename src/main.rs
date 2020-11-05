@@ -16,6 +16,17 @@ struct Record {
 #[derive(Debug, Serialize)]
 struct RecordWrite {
     msgstr: String,
+    msgid: String,
+    three: String,
+    four: String,
+    five: String,
+    six: String,
+    seven: String,
+}
+#[derive(Debug, Serialize)]
+struct RecordX {
+    msgstr: String,
+    // msgid: String,
 }
 fn readcsv() -> Vec<Record> {
     let mut records: Vec<Record> = Vec::new();
@@ -30,17 +41,49 @@ fn readcsv() -> Vec<Record> {
     records
 }
 fn writecsv(msg_str: Vec<String>) -> Result<(), Box<dyn Error>> {
+    //read
+    let mut rdr = csv::Reader::from_path("data.csv")?;
+    let mut store = vec![];
+    for result in rdr.deserialize() {
+        let record: HashMap<String, String> = result?;
+        store.push(record["msgid"].clone());
+    }
+
     let file = OpenOptions::new().append(true).open("data.csv")?;
     let mut wtr = WriterBuilder::new().has_headers(true).from_writer(file);
     //let mut wtr = csv::Writer::from_path(file_path).unwrap();
 
     //let mut wtr = csv::Writer::from_path("data.")?;
-    for msgstr_text in msg_str.iter() {
-        println!("Write Word {}", msgstr_text);
+
+    for ((((((one, two), three), four), five), six), seven) in msg_str
+        .iter()
+        .zip(store.clone())
+        .zip(store.clone())
+        .zip(store.clone())
+        .zip(store.clone())
+        .zip(store.clone())
+        .zip(store.clone())
+    {
+        // for loop2 in store.iter()
+        // println!("Write Word {}", loop1);
         wtr.serialize(RecordWrite {
-            msgstr: msgstr_text.to_string(),
+            msgstr: one.to_string(),
+            msgid: two.to_string(),
+            three: three.to_string(),
+            four: four.to_string(),
+            five: five.to_string(),
+            six: six.to_string(),
+            seven: seven.to_string(),
         })?;
     }
+
+    // for msgx in store.iter() {
+    //     println!("Write Word {}", msgx);
+    //     wtr.serialize(RecordX {
+    //         msgstr: msgx.to_string(),
+    //     })?;
+    // }
+
     wtr.flush()?;
     Ok(())
 }
@@ -53,10 +96,10 @@ fn main() {
 
     let mut store = vec![];
     for i in data.iter() {
-        std::thread::sleep_ms(15000); //set milli second for loop translate
+        // std::thread::sleep(std::time::Duration::from_secs(15)); //set milli second for loop translate
         let source = String::from("en"); //source language
         let target = String::from("km"); //target language
-        let url = generate_url(i.to_string(), source, target);
+        let url = translation(i.to_string(), source, target);
         let v = reqwest::blocking::get(&url)
             .and_then(|resp| resp.text())
             .and_then(|body| Ok(serde_json::from_str::<Vec<Value>>(&body)))
@@ -90,7 +133,7 @@ fn main() {
     writecsv(store.clone()).unwrap();
 }
 
-fn generate_url(v: String, source: String, target: String) -> String {
+fn translation(v: String, source: String, target: String) -> String {
     let base_url = "https://translate.googleapis.com/translate_a/single";
     format!(
         "{}{}{}{}{}",
