@@ -1,11 +1,12 @@
 use csv;
+use csv::WriterBuilder;
 use reqwest;
 use seahorse::color;
 use serde::Serialize;
 use serde_json::{self, Value};
 use std::collections::HashMap;
 use std::error::Error;
-use std::process;
+use std::fs::OpenOptions;
 use std::process::exit;
 
 #[derive(Debug, Serialize, Clone)]
@@ -14,13 +15,24 @@ struct Record {
 }
 #[derive(Debug, Serialize)]
 struct RecordWrite {
+    msgid: String,
+    msgid_plural: String,
+    flags: String,
+    references: String,
+    extractedComments: String,
+    comments: String,
     msgstr: String,
 }
+#[derive(Debug, Serialize)]
+struct RecordX {
+    msgstr: String,
+    // msgid: String,
+}
+
 fn readcsv() -> Vec<Record> {
     let mut records: Vec<Record> = Vec::new();
-
     //read_data
-    let mut rdr = csv::Reader::from_path("data.csv").unwrap();
+    let mut rdr = csv::Reader::from_path("test.csv").unwrap();
     for result in rdr.deserialize() {
         let record: HashMap<String, String> = result.unwrap();
         records.push(Record {
@@ -29,32 +41,66 @@ fn readcsv() -> Vec<Record> {
     }
     records
 }
+fn writecsv(msg_str: Vec<String>) -> Result<(), Box<dyn Error>> {
+    //read
+    let mut rdr = csv::Reader::from_path("test.csv")?;
+    let mut w_msgid = vec![];
+    let mut w_msgid_plural = vec![];
+    let mut w_flags = vec![];
+    let mut w_references = vec![];
+    let mut w_extractedComments = vec![];
+    let mut w_comments = vec![];
+    let mut w_msgstr = vec![];
 
-fn writecsv(
-    // file_path: &str,
-    // c_name: Vec<String>,
-    // r_name: Vec<String>,
-    // msgstr_str: String,
-    msg_str: Vec<String>,
-) -> Result<(), Box<dyn Error>> {
-    //let mut wtr = csv::Writer::from_path(file_path)?;
-    let mut wtr = csv::Writer::from_path("output.csv")?;
-    // let msgstr_str = vec!["Bob", "Frank", "Ferris"];
-    // let msg_arr: Vec<&str> = msgstr_str.split_whitespace().collect::<Vec<&str>>();
+    for result in rdr.deserialize() {
+        let record: HashMap<String, String> = result?;
+        w_msgid.push(record["msgid"].clone());
+        w_msgid_plural.push(record["msgid_plural"].clone());
+        w_flags.push(record["flags"].clone());
+        w_references.push(record["references"].clone());
+        w_extractedComments.push(record["extractedComments"].clone());
+        w_comments.push(record["comments"].clone());
+        w_msgstr.push(record["msgstr[0]"].clone());
+    }
 
-    //let msgstr_str =
+    let file = OpenOptions::new().append(true).open("data.csv")?;
+    let mut wtr = WriterBuilder::new().has_headers(true).from_writer(file);
+    //let mut wtr = csv::Writer::from_path(file_path).unwrap();
 
-    for msgstr_text in msg_str.iter() {
-        println!("Hello {}", msgstr_text);
+    //let mut wtr = csv::Writer::from_path("data.")?;
+
+    for ((((((a, b), c), d), e), f), g) in msg_str
+        .iter()
+        .zip(w_msgid_plural.clone())
+        .zip(w_flags.clone())
+        .zip(w_references.clone())
+        .zip(w_extractedComments.clone())
+        .zip(w_comments.clone())
+        .zip(w_msgstr.clone())
+    {
+        // for loop2 in store.iter()
+        // println!("Write Word {}", loop1);
         wtr.serialize(RecordWrite {
-            msgstr: msgstr_text.to_string(),
+            msgid: a.to_string(),
+            msgid_plural: b.to_string(),
+            flags: c.to_string(),
+            references: d.to_string(),
+            extractedComments: e.to_string(),
+            comments: f.to_string(),
+            msgstr: g.to_string(),
         })?;
     }
-    wtr.flush()?;
 
+    // for msgx in store.iter() {
+    //     println!("Write Word {}", msgx);
+    //     wtr.serialize(RecordX {
+    //         msgstr: msgx.to_string(),
+    //     })?;
+    // }
+
+    wtr.flush()?;
     Ok(())
 }
-
 fn main() {
     let records = readcsv();
     let mut data: Vec<String> = Vec::new();
@@ -62,13 +108,12 @@ fn main() {
         data.push(i.msgid.to_string());
     }
 
-    let mut store_word = String::new();
     let mut store = vec![];
     for i in data.iter() {
-        std::thread::sleep_ms(15000); //set milli second for loop translate
+        // std::thread::sleep(std::time::Duration::from_secs(15)); //set milli second for loop translate
         let source = String::from("en"); //source language
         let target = String::from("km"); //target language
-        let url = generate_url(i.to_string(), source, target);
+        let url = translation(i.to_string(), source, target);
         let v = reqwest::blocking::get(&url)
             .and_then(|resp| resp.text())
             .and_then(|body| Ok(serde_json::from_str::<Vec<Value>>(&body)))
@@ -93,29 +138,16 @@ fn main() {
                     .collect::<Vec<&str>>()
                     .join(" ");
 
-                //store_word = result;
                 store.push(result);
             }
             None => eprintln!("{}", color::red("Error...")),
         }
-
-        //println!("last {:?}", store);
-
-        // writecsv("data.csv").unwrap();
-        // writecsv(
-        //     // "output.csv",
-        //     // vec!["msgid".to_string()],
-        //     vec![store_word.clone()],
-        // )
-        // .unwrap();
-        //writecsv(store.clone()).unwrap();
     }
-    println!("last {:?}", store);
+    //println!("last {:?}", store);
     writecsv(store.clone()).unwrap();
-
 }
 
-fn generate_url(v: String, source: String, target: String) -> String {
+fn translation(v: String, source: String, target: String) -> String {
     let base_url = "https://translate.googleapis.com/translate_a/single";
     format!(
         "{}{}{}{}{}",
