@@ -1,5 +1,5 @@
 msgid,msgid_plural,flags,references,extractedComments,comments,msgstr[0],msgstr[1]
-Color 1,,kde-format,ColorScheme.cpp:149,,,ពណ៌ ១,ពណ៌ ១
-Color 2,,kde-format,ColorScheme.cpp:150,,,ពណ៌ ២,ពណ៌ ២
-Color 3,,kde-format,ColorScheme.cpp:151,,,ពណ៌ ៣,ពណ៌ ៣
-Color 4,,kde-format,ColorScheme.cpp:152,,,ពណ៌ ៤,ពណ៌ ៤
+Color 1,sunny 1,kde-format,ColorScheme.cpp:149,,,ពណ៌ ១,មានពន្លឺថ្ងៃ ១
+Color 2,sunny 2,kde-format,ColorScheme.cpp:150,,,ពណ៌ ២,មានពន្លឺថ្ងៃ ២
+Color 3,sunny 3,kde-format,ColorScheme.cpp:151,,,ពណ៌ ៣,មានពន្លឺថ្ងៃ ៣
+Color 4,sunny 4,kde-format,ColorScheme.cpp:152,,,ពណ៌ ៤,មានពន្លឺថ្ងៃ ៤

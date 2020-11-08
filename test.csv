@@ -1,5 +1,5 @@
 msgid,msgid_plural,flags,references,extractedComments,comments,msgstr[0]
-Color 1,,kde-format,ColorScheme.cpp:149,,,
-Color 2,,kde-format,ColorScheme.cpp:150,,,
-Color 3,,kde-format,ColorScheme.cpp:151,,,
-Color 4,,kde-format,ColorScheme.cpp:152,,,
+Color 1,sunny 1,kde-format,ColorScheme.cpp:149,,,
+Color 2,sunny 2,kde-format,ColorScheme.cpp:150,,,
+Color 3,sunny 3,kde-format,ColorScheme.cpp:151,,,
+Color 4,sunny 4,kde-format,ColorScheme.cpp:152,,,

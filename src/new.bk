@@ -1,4 +1,3 @@
-
 use csv;
 use csv::WriterBuilder;
 use reqwest;
@@ -13,78 +12,85 @@ use std::process::exit;
 #[derive(Debug, Serialize, Clone)]
 struct Record {
     msgid: String,
+    msgid_plural: String,
 }
 #[derive(Debug, Serialize)]
 struct RecordWrite {
-    msgstr: String,
     msgid: String,
-    three: String,
-    four: String,
-    five: String,
-    six: String,
-    seven: String,
+    msgid_plural: String,
+    flags: String,
+    references: String,
+    #[serde(rename = "extractedComments")]
+    extracted_comments: String,
+    comments: String,
+    #[serde(rename = "msgstr[0]")]
+    msgstr0: String,
+    #[serde(rename = "msgstr[1]")]
+    msgstr1: String,
+    // #[serde(rename = "msgstr[2]")]
+    // msgstr2: String,
+    // #[serde(rename = "msgstr[3]")]
+    // msgstr3: String,
 }
-#[derive(Debug, Serialize)]
-struct RecordX {
-    msgstr: String,
-    // msgid: String,
-}
+
 fn readcsv() -> Vec<Record> {
     let mut records: Vec<Record> = Vec::new();
     //read_data
-    let mut rdr = csv::Reader::from_path("data.csv").unwrap();
+    let mut rdr = csv::Reader::from_path("test.csv").unwrap();
     for result in rdr.deserialize() {
         let record: HashMap<String, String> = result.unwrap();
         records.push(Record {
             msgid: record["msgid"].to_string(),
+            msgid_plural: record["msgid_plural"].to_string(),
         });
     }
     records
 }
 fn writecsv(msg_str: Vec<String>) -> Result<(), Box<dyn Error>> {
     //read
-    let mut rdr = csv::Reader::from_path("data.csv")?;
-    let mut store = vec![];
+    let mut rdr = csv::Reader::from_path("test.csv")?;
+    let mut w_msgid = vec![];
+    let mut w_msgid_plural = vec![];
+    let mut w_flags = vec![];
+    let mut w_references = vec![];
+    let mut w_extracted_comments = vec![];
+    let mut w_comments = vec![];
+    let mut w_msgstr = vec![];
+
     for result in rdr.deserialize() {
         let record: HashMap<String, String> = result?;
-        store.push(record["msgid"].clone());
+        w_msgid.push(record["msgid"].clone());
+        w_msgid_plural.push(record["msgid_plural"].clone());
+        w_flags.push(record["flags"].clone());
+        w_references.push(record["references"].clone());
+        w_extracted_comments.push(record["extractedComments"].clone());
+        w_comments.push(record["comments"].clone());
+        w_msgstr.push(record["msgstr[0]"].clone());
+        // w_msgstr.push(!record["msgstr[0]"].clone().is_empty());
     }
+    let mut wtr = csv::Writer::from_path("output.csv")?;
 
-    let file = OpenOptions::new().append(true).open("data.csv")?;
-    let mut wtr = WriterBuilder::new().has_headers(true).from_writer(file);
-    //let mut wtr = csv::Writer::from_path(file_path).unwrap();
-
-    //let mut wtr = csv::Writer::from_path("data.")?;
-
-    for ((((((one, two), three), four), five), six), seven) in msg_str
+    for ((((((a, b), c), d), e), f), g) in msg_str
         .iter()
-        .zip(store.clone())
-        .zip(store.clone())
-        .zip(store.clone())
-        .zip(store.clone())
-        .zip(store.clone())
-        .zip(store.clone())
+        .zip(w_msgid_plural.clone())
+        .zip(w_flags.clone())
+        .zip(w_references.clone())
+        .zip(w_extracted_comments.clone())
+        .zip(w_comments.clone())
+        .zip(w_msgid.clone())
     {
-        // for loop2 in store.iter()
-        // println!("Write Word {}", loop1);
         wtr.serialize(RecordWrite {
-            msgstr: one.to_string(),
-            msgid: two.to_string(),
-            three: three.to_string(),
-            four: four.to_string(),
-            five: five.to_string(),
-            six: six.to_string(),
-            seven: seven.to_string(),
+            msgid: g.to_string(),
+            msgid_plural: b.to_string(),
+            flags: c.to_string(),
+            references: d.to_string(),
+            extracted_comments: e.to_string(),
+            comments: f.to_string(),
+            msgstr0: a.to_string(),
+            msgstr1: a.to_string(), //msgstr2
+                                    // msgstr3
         })?;
     }
-
-    // for msgx in store.iter() {
-    //     println!("Write Word {}", msgx);
-    //     wtr.serialize(RecordX {
-    //         msgstr: msgx.to_string(),
-    //     })?;
-    // }
-
     wtr.flush()?;
     Ok(())
 }
@@ -94,10 +100,9 @@ fn main() {
     for i in records.iter() {
         data.push(i.msgid.to_string());
     }
-
-    let mut store = vec![];
+    let mut store_msg = vec![];
     for i in data.iter() {
-        // std::thread::sleep(std::time::Duration::from_secs(15)); //set milli second for loop translate
+        std::thread::sleep(std::time::Duration::from_secs(10)); //set milli second for loop translate
         let source = String::from("en"); //source language
         let target = String::from("km"); //target language
         let url = translation(i.to_string(), source, target);
@@ -125,13 +130,13 @@ fn main() {
                     .collect::<Vec<&str>>()
                     .join(" ");
 
-                store.push(result);
+                store_msg.push(result);
             }
             None => eprintln!("{}", color::red("Error...")),
         }
     }
     //println!("last {:?}", store);
-    writecsv(store.clone()).unwrap();
+    writecsv(store_msg.clone()).unwrap();
 }
 
 fn translation(v: String, source: String, target: String) -> String {
