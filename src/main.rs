@@ -25,10 +25,6 @@ struct RecordWrite {
     msgstr0: String,
     #[serde(rename = "msgstr[1]")]
     msgstr1: String,
-    // #[serde(rename = "msgstr[2]")]
-    // msgstr2: String,
-    // #[serde(rename = "msgstr[3]")]
-    // msgstr3: String,
 }
 
 fn readcsv() -> Vec<Record> {
@@ -106,11 +102,9 @@ fn main() {
     for j in records.iter() {
         data_msgid_p.push(j.msgid_plural.to_string());
     }
-
     let mut store_msg = vec![];
     let mut store_msg_p = vec![];
 
-    //loop translate msgid_plural
     for i in data_msgid_p.iter() {
         std::thread::sleep(std::time::Duration::from_secs(10)); //set milli second for loop translate
 
@@ -131,19 +125,21 @@ fn main() {
             });
         match v.first() {
             Some(item) => {
-                let result = item
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .map(|s| s[0].as_str().unwrap())
-                    .collect::<Vec<&str>>()
-                    .join(" ");
-
+                let arr = item.as_array();
+                let result = match arr {
+                    Some(values) => values
+                        .iter()
+                        .map(|s| s[0].as_str().unwrap())
+                        .collect::<Vec<&str>>()
+                        .join(" "),
+                    None => String::from(""),
+                };
                 store_msg_p.push(result);
             }
             None => eprintln!("{}", color::red("Error...")),
         }
     }
+
     //loop translate msgid
     for j in data_msgid.iter() {
         std::thread::sleep(std::time::Duration::from_secs(10)); //set milli second for loop translate
