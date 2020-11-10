@@ -28,13 +28,21 @@ struct RecordWrite {
 }
 struct JSONPointer {
     segments: Vec<String>,
+    segments_ac: Vec<String>,
 }
 
 fn build_json_pointer(s: Vec<String>) -> JSONPointer {
     JSONPointer {
         segments: s
             .iter()
-            .map(|x| x.replace("_", "").replace("&", ""))
+            .map(|x| {
+                x.replace("_", "").replace("&", "").replace("%", "xx..xx")
+                // .replace("xx..xx", "%")
+            })
+            .collect(),
+        segments_ac: s
+            .iter()
+            .map(|x| x.replace("_", "").replace("xx..xx", "%"))
             .collect(),
     }
 }
@@ -55,6 +63,10 @@ fn readcsv() -> Vec<Record> {
     records
 }
 fn writecsv(msg_str: Vec<String>, msg_p_str: Vec<String>) -> Result<(), Box<dyn Error>> {
+    let p_ac = build_json_pointer(msg_str);
+
+    // println!("after {:?}", p_ac.segments);
+    println!("write xxx {:?}", p_ac.segments_ac);
     //read
     let mut rdr = csv::Reader::from_path("test.csv")?;
     let mut w_msgid = vec![];
@@ -77,7 +89,8 @@ fn writecsv(msg_str: Vec<String>, msg_p_str: Vec<String>) -> Result<(), Box<dyn 
     }
     let mut wtr = csv::Writer::from_path("output.csv")?;
 
-    for (((((((a, b), c), d), e), f), g), h) in msg_str
+    for (((((((a, b), c), d), e), f), g), h) in p_ac
+        .segments_ac
         .iter()
         .zip(w_msgid.clone())
         .zip(w_msgid_plural.clone())
@@ -198,9 +211,12 @@ fn main() {
 
     println!("last {:?}", store_msg);
     println!("last 22 {:?}", store_msg_p);
-    writecsv(store_msg.clone(), store_msg_p.clone()).unwrap();
-}
 
+    // let p_last = build_json_pointer(store_msg.clone());
+    // println!("last pp {:?}", p_last.segments);
+
+    writecsv(store_msg, store_msg_p).unwrap();
+}
 fn translation(v: String, source: String, target: String) -> String {
     let base_url = "https://translate.googleapis.com/translate_a/single";
     format!(
