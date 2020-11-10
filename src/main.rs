@@ -26,13 +26,27 @@ struct RecordWrite {
     #[serde(rename = "msgstr[1]")]
     msgstr1: String,
 }
+struct JSONPointer {
+    segments: Vec<String>,
+}
+
+fn build_json_pointer(s: Vec<String>) -> JSONPointer {
+    JSONPointer {
+        segments: s
+            .iter()
+            .map(|x| x.replace("_", "").replace("&", ""))
+            .collect(),
+    }
+}
 
 fn readcsv() -> Vec<Record> {
     let mut records: Vec<Record> = Vec::new();
+
     //read_data
     let mut rdr = csv::Reader::from_path("test.csv").unwrap();
     for result in rdr.deserialize() {
         let record: HashMap<String, String> = result.unwrap();
+        // r_msgid_rp.push(record["msgid"].clone());
         records.push(Record {
             msgid: record["msgid"].to_string(),
             msgid_plural: record["msgid_plural"].to_string(),
@@ -60,7 +74,6 @@ fn writecsv(msg_str: Vec<String>, msg_p_str: Vec<String>) -> Result<(), Box<dyn 
         w_extracted_comments.push(record["extractedComments"].clone());
         w_comments.push(record["comments"].clone());
         w_msgstr.push(record["msgstr[0]"].clone());
-        // w_msgstr.push(!record["msgstr[0]"].clone().is_empty());
     }
     let mut wtr = csv::Writer::from_path("output.csv")?;
 
@@ -91,17 +104,25 @@ fn writecsv(msg_str: Vec<String>, msg_p_str: Vec<String>) -> Result<(), Box<dyn 
 }
 fn main() {
     let records = readcsv();
+
     let mut data_msgid: Vec<String> = Vec::new();
     let mut data_msgid_p: Vec<String> = Vec::new();
+
     let source = String::from("en"); //source language
     let target = String::from("km"); //target language
 
-    for i in records.iter() {
-        data_msgid.push(i.msgid.to_string());
-    }
     for j in records.iter() {
-        data_msgid_p.push(j.msgid_plural.to_string());
+        data_msgid.push(j.msgid.to_string());
     }
+
+    for i in records.iter() {
+        data_msgid_p.push(i.msgid_plural.to_string());
+    }
+    println!("data {:?}", data_msgid);
+    let p = build_json_pointer(data_msgid.clone());
+
+    println!("after {:?}", p.segments);
+
     let mut store_msg = vec![];
     let mut store_msg_p = vec![];
 
@@ -141,7 +162,7 @@ fn main() {
     }
 
     //loop translate msgid
-    for j in data_msgid.iter() {
+    for j in p.segments.iter() {
         std::thread::sleep(std::time::Duration::from_secs(10)); //set milli second for loop translate
 
         let url = translation(j.to_string(), source.clone(), target.clone());

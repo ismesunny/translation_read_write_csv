@@ -1,5 +1,3 @@
-msgid,msgid_plural,flags,references,extractedComments,comments,msgstr[0]
-Color 1,,kde-format,ColorScheme.cpp:149,,,
-Color 2,,kde-format,ColorScheme.cpp:149,,,
-
-
+msgid,msgid_plural,msgctxt,flags,references,extractedComments,comments,msgstr[0]
+_Your names,,NAME OF TRANSLATORS,kde-format,,,,Lors Housann
+Yo&ur emails,,EMAIL OF TRANSLATORS,kde-format,,,,lorshousunny@gmail.com
