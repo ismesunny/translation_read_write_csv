@@ -1,4 +1,4 @@
 msgid,msgid_plural,flags,references,extractedComments,comments,msgstr[0],msgstr[1]
 _Your names,,kde-format,,,,ឈ្មោះរបស់អ្នក,
-Yo&ur emails,,kde-format,,,,អ៊ីមែលរបស់អ្នក,
-%1 Musics,,kde-format,,,,%1 តន្ត្រី,
+<para>This is the emails <HEAD>,,kde-format,,,,<para> នេះគឺជាអ៊ីមែល <HEAD>,
+%1 Musics</interface>,,kde-format,,,,%1 តន្ត្រី </ ចំណុចប្រទាក់>,

@@ -36,13 +36,27 @@ fn build_json_pointer(s: Vec<String>) -> JSONPointer {
         segments: s
             .iter()
             .map(|x| {
-                x.replace("_", "").replace("&", "").replace("%", "xx..xx")
-                // .replace("xx..xx", "%")
+                x.replace("_", "")
+                    .replace("&", "")
+                    .replace("%", "xxpercentxx")
+                    .replace("%", "xxpercentxx")
+                    .replace("<", "\"<\"")
+                    .replace("</", "\"<\"/")
+                    .replace(">", "\">\"")
             })
             .collect(),
         segments_ac: s
             .iter()
-            .map(|x| x.replace("_", "").replace("xx..xx", "%"))
+            .map(|x| {
+                x.replace("_", "")
+                    .replace("xxpercentxx", "%")
+                    .replace("\"<\"", "<")
+                    .replace("\"<\"/", "</")
+                    .replace("\">\"", ">")
+                    .replace("< ", "<")
+                    .replace(" >", ">")
+                    .replace("</ ", "</")
+            })
             .collect(),
     }
 }
@@ -54,7 +68,6 @@ fn readcsv() -> Vec<Record> {
     let mut rdr = csv::Reader::from_path("test.csv").unwrap();
     for result in rdr.deserialize() {
         let record: HashMap<String, String> = result.unwrap();
-        // r_msgid_rp.push(record["msgid"].clone());
         records.push(Record {
             msgid: record["msgid"].to_string(),
             msgid_plural: record["msgid_plural"].to_string(),
@@ -92,13 +105,13 @@ fn writecsv(msg_str: Vec<String>, msg_p_str: Vec<String>) -> Result<(), Box<dyn 
     for (((((((a, b), c), d), e), f), g), h) in p_ac
         .segments_ac
         .iter()
-        .zip(w_msgid.clone())
-        .zip(w_msgid_plural.clone())
-        .zip(w_flags.clone())
-        .zip(w_references.clone())
-        .zip(w_extracted_comments.clone())
-        .zip(w_comments.clone())
-        .zip(msg_p_str.clone())
+        .zip(w_msgid)
+        .zip(w_msgid_plural)
+        .zip(w_flags)
+        .zip(w_references)
+        .zip(w_extracted_comments)
+        .zip(w_comments)
+        .zip(msg_p_str)
     {
         wtr.serialize(RecordWrite {
             msgid: b.to_string(),
@@ -211,9 +224,6 @@ fn main() {
 
     println!("last {:?}", store_msg);
     println!("last 22 {:?}", store_msg_p);
-
-    // let p_last = build_json_pointer(store_msg.clone());
-    // println!("last pp {:?}", p_last.segments);
 
     writecsv(store_msg, store_msg_p).unwrap();
 }
