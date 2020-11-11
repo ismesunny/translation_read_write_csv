@@ -39,10 +39,10 @@ fn build_json_pointer(s: Vec<String>) -> JSONPointer {
                 x.replace("_", "")
                     .replace("&", "")
                     .replace("%", "xxpercentxx")
-                    .replace("%", "xxpercentxx")
-                    .replace("<", "\"<\"")
-                    .replace("</", "\"<\"/")
-                    .replace(">", "\">\"")
+                    //  .replace("%", "xxpercentxx")
+                    .replace("</", "xxlessbsxx")
+                    .replace("<", "xxlessxx")
+                    .replace(">", "xxgreaterxx")
             })
             .collect(),
         segments_ac: s
@@ -50,12 +50,12 @@ fn build_json_pointer(s: Vec<String>) -> JSONPointer {
             .map(|x| {
                 x.replace("_", "")
                     .replace("xxpercentxx", "%")
-                    .replace("\"<\"", "<")
-                    .replace("\"<\"/", "</")
-                    .replace("\">\"", ">")
+                    .replace("xxlessxx", "<")
+                    .replace("xxlessbsxx", "</")
+                    .replace("xxgreaterxx", ">")
+                    .replace("< / ", "</")
                     .replace("< ", "<")
                     .replace(" >", ">")
-                    .replace("</ ", "</")
             })
             .collect(),
     }
